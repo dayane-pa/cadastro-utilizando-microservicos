@@ -18,15 +18,15 @@ public class ArtigoRepository {
 
     public void adicionarArtigo(Artigo novoArtigo) {
 
-        for (int index = 0; index < listaDeArtigosPrincipal.size(); index++) {
 
-            Artigo artigo1 = listaDeArtigosPrincipal.get(index);
-
-            if (artigo1.getTituloDoArtigo().equals(novoArtigo.getTituloDoArtigo()) && artigo1.getNomeDoAutor()
+        listaDeArtigosPrincipal.forEach(artigo->{
+            
+            if (artigo.getTituloDoArtigo().equals(novoArtigo.getTituloDoArtigo()) && artigo.getNomeDoAutor()
                     .equals(novoArtigo.getNomeDoAutor())) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Artigo já existente. " + novoArtigo);
-            }
-        }
+            }  
+        });
+        
         listaDeArtigosPrincipal.add(novoArtigo);
     }
 
@@ -38,9 +38,8 @@ public class ArtigoRepository {
 
         List<Artigo> artigosEncontrados = new ArrayList<>();
 
-        for (int index = 0; index < listaDeArtigosPrincipal.size(); index++) {
 
-            Artigo artigo = listaDeArtigosPrincipal.get(index);
+        listaDeArtigosPrincipal.forEach(artigo -> {
 
             if (Objects.nonNull(nomeDoAutor)) {
                 if (artigo.getNomeDoAutor().contains(nomeDoAutor)) {
@@ -53,7 +52,8 @@ public class ArtigoRepository {
                     artigosEncontrados.add(artigo);
                 }
             }
-        }
+        });
+
 
         if (artigosEncontrados.size() == 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Não encontrado, dados incorretos. " +
@@ -66,9 +66,7 @@ public class ArtigoRepository {
 
     public void atualizarArtigo(Artigo novoArtigo) {
 
-        for (int index = 0; index < listaDeArtigosPrincipal.size(); index++) {
-
-            Artigo artigo = listaDeArtigosPrincipal.get(index);
+        listaDeArtigosPrincipal.forEach(artigo -> {
 
             if (artigo.getNomeDoAutor().equals(novoArtigo.getNomeDoAutor())
                     && artigo.getDataDaPublicacao().equals(novoArtigo.getDataDaPublicacao())) {
@@ -77,7 +75,8 @@ public class ArtigoRepository {
                 artigo.setCorpo(novoArtigo.getCorpo());
                 return;
             }
-        }
+        });
+
 
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Artigo não pode ser alterado, verifique o nome do " +
                 "autor e data " + novoArtigo);
@@ -86,17 +85,16 @@ public class ArtigoRepository {
 
     public void deletarArtigo(String tituloDoArtigo, String nomeDoAutor) {
 
-        for (int index = 0; index < listaDeArtigosPrincipal.size(); index++) {
-
-            Artigo artigo = listaDeArtigosPrincipal.get(index);
-
-            if (artigo.getTituloDoArtigo().equals(tituloDoArtigo) && artigo.getNomeDoAutor().
-                    equals(nomeDoAutor)) {
-                listaDeArtigosPrincipal.remove(artigo);
-                return;
-            }
-        }
+       listaDeArtigosPrincipal.forEach(artigo -> {
+           
+           if (artigo.getTituloDoArtigo().equals(tituloDoArtigo) && artigo.getNomeDoAutor().
+                   equals(nomeDoAutor)) {
+               listaDeArtigosPrincipal.remove(artigo);
+               return;
+           }
+       });
+       
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Artigo não pode ser deletado");
     }
 }
-// TODO: 27/04/22 mandar para o git
+
