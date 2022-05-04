@@ -77,7 +77,6 @@ public class ArtigoRepository {
             }
         });
 
-
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Artigo não pode ser alterado, verifique o nome do " +
                 "autor e data " + novoArtigo);
 
