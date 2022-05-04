@@ -1,7 +1,7 @@
 package com.example.cadastro.controller;
 
 import com.example.cadastro.domain.Pessoa;
-import com.example.cadastro.repository.PersonRepository;
+import com.example.cadastro.repository.PessoaRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,9 +13,9 @@ import java.util.List;
 @RequestMapping("/person")
 public class PersonController {
 
-    private PersonRepository pessoaRepository;
+    private PessoaRepository pessoaRepository;
 
-    public PersonController(PersonRepository pessoaRepository) {
+    public PersonController(PessoaRepository pessoaRepository) {
         this.pessoaRepository = pessoaRepository;
     }
 

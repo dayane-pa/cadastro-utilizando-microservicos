@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 public class Artigo {
 
     private String tituloDoArtigo;
-    private String nomeDoAutor;
+    private Pessoa autor;
     private String dataDaPublicacao;
     private String corpo;
 

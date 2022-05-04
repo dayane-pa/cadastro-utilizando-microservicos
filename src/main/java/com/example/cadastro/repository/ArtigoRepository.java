@@ -21,8 +21,8 @@ public class ArtigoRepository {
 
         listaDeArtigosPrincipal.forEach(artigo->{
             
-            if (artigo.getTituloDoArtigo().equals(novoArtigo.getTituloDoArtigo()) && artigo.getNomeDoAutor()
-                    .equals(novoArtigo.getNomeDoAutor())) {
+            if (artigo.getTituloDoArtigo().equals(novoArtigo.getTituloDoArtigo()) && artigo.getAutor().getName()
+                    .equals(novoArtigo.getAutor().getName())) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Artigo já existente. " + novoArtigo);
             }  
         });
@@ -42,7 +42,7 @@ public class ArtigoRepository {
         listaDeArtigosPrincipal.forEach(artigo -> {
 
             if (Objects.nonNull(nomeDoAutor)) {
-                if (artigo.getNomeDoAutor().contains(nomeDoAutor)) {
+                if (artigo.getAutor().getName().contains(nomeDoAutor)) {
                     artigosEncontrados.add(artigo);
                 }
             }
@@ -68,7 +68,7 @@ public class ArtigoRepository {
 
         listaDeArtigosPrincipal.forEach(artigo -> {
 
-            if (artigo.getNomeDoAutor().equals(novoArtigo.getNomeDoAutor())
+            if (artigo.getAutor().getName().equals(novoArtigo.getAutor().getName())
                     && artigo.getDataDaPublicacao().equals(novoArtigo.getDataDaPublicacao())) {
 
                 artigo.setTituloDoArtigo(novoArtigo.getTituloDoArtigo());
@@ -85,15 +85,14 @@ public class ArtigoRepository {
 
     public void deletarArtigo(String tituloDoArtigo, String nomeDoAutor) {
 
-       listaDeArtigosPrincipal.forEach(artigo -> {
-           
-           if (artigo.getTituloDoArtigo().equals(tituloDoArtigo) && artigo.getNomeDoAutor().
-                   equals(nomeDoAutor)) {
-               listaDeArtigosPrincipal.remove(artigo);
-               return;
-           }
-       });
-       
+        for (Artigo artigo :listaDeArtigosPrincipal) {
+            if (artigo.getTituloDoArtigo().equals(tituloDoArtigo) && artigo.getAutor().getName().
+                    equals(nomeDoAutor)) {
+                listaDeArtigosPrincipal.remove(artigo);
+                return;
+            }
+        }
+
         throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Artigo não pode ser deletado");
     }
 }

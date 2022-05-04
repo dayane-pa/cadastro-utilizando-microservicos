@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Repository
-public class PersonRepository {
+public class PessoaRepository {
 
 
     private final List<Pessoa> pessoaListDataBase = new ArrayList<>();

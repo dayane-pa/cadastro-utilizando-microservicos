@@ -2,13 +2,11 @@ package com.example.cadastro.controller;
 
 import com.example.cadastro.domain.Artigo;
 import com.example.cadastro.repository.ArtigoRepository;
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import com.example.cadastro.repository.PessoaRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.print.attribute.standard.RequestingUserName;
 import java.util.List;
 
 
@@ -17,6 +15,10 @@ import java.util.List;
 public class ArtigoController {
 
     private ArtigoRepository artigoRepository;
+
+    public ArtigoController(ArtigoRepository artigoRepository) {
+        this.artigoRepository = artigoRepository;
+    }
 
     @PostMapping()
     public ResponseEntity<Void> adicionarArtigo(@RequestBody Artigo artigo) {
