@@ -1,5 +1,6 @@
 package com.example.cadastro.domain;
 
+import javax.validation.constraints.NotNull;
 import lombok.*;
 
 import javax.validation.constraints.NotBlank;
@@ -8,12 +9,13 @@ import javax.validation.constraints.NotBlank;
 @Data
 public class Pessoa {
 
-    private int id;
-    @NotBlank
-    private String name;
-    @NotBlank
-    private String lastName;
-    private String birthDate;
+  @NotNull(message = "{id.not.null}")
+  private int id;
+  @NotBlank(message = "{name.not.blank}")
+  private String name;
+  @NotBlank(message = "{lastName.not.blank}")
+  private String lastName;
+  private String birthDate;
 
 
 }

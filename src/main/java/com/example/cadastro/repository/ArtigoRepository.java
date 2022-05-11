@@ -3,6 +3,8 @@ package com.example.cadastro.repository;
 
 import com.example.cadastro.domain.Artigo;
 import com.example.cadastro.domain.Pessoa;
+import java.util.Date;
+import java.util.Optional;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.server.ResponseStatusException;
@@ -15,6 +17,8 @@ import java.util.stream.Collectors;
 @Repository
 public class ArtigoRepository {
 
+  private int contador = 0;
+
   private Pessoa pessoa = new Pessoa();
 
   private List<Artigo> listaDeArtigosPrincipal = new ArrayList<>();
@@ -22,15 +26,26 @@ public class ArtigoRepository {
 
   public void adicionarArtigo(Artigo novoArtigo) {
 
-    listaDeArtigosPrincipal.forEach(artigo -> {
+    Optional<Artigo> optionalArtigo = listaDeArtigosPrincipal.stream()
+        .filter(artigo -> artigo.getTituloDoArtigo().equals(novoArtigo.getTituloDoArtigo()))
+        .filter(artigo -> artigo.getAutor().getName().equals(novoArtigo.getAutor().getName()))
+        .findFirst();
 
-      if (artigo.getTituloDoArtigo().equals(novoArtigo.getTituloDoArtigo()) && artigo.getAutor()
-          .getName().equals(novoArtigo.getAutor().getName())) {
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-            "Artigo já existente. " + novoArtigo);
-      }
-    });
+    if (optionalArtigo.isPresent()){
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+          "Artigo já existente. " + optionalArtigo.get());
+    }
 
+//    listaDeArtigosPrincipal.forEach(artigo -> {
+//
+//      if (artigo.getTituloDoArtigo().equals(novoArtigo.getTituloDoArtigo()) && artigo.getAutor()
+//          .getName().equals(novoArtigo.getAutor().getName())) {
+//        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+//            "Artigo já existente. " + artigo);
+//      }
+//    });
+
+    novoArtigo.setId(getProximoId());
     listaDeArtigosPrincipal.add(novoArtigo);
 
   }
@@ -114,7 +129,12 @@ public class ArtigoRepository {
 
     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Artigo não pode ser deletado");
   }
+
+  private int getProximoId() {
+    contador++;
+    return contador;
+  }
+// TODO: 11/05/22 criar um id sequencial para pessoa, Fazer stream em todos os "for"
 }
 
-// TODO: 04/05/22 estudar stream de listas
 
