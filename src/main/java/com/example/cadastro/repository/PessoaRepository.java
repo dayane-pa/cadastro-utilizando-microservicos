@@ -1,81 +1,80 @@
 package com.example.cadastro.repository;
 
+import static java.util.Objects.isNull;
+
 import com.example.cadastro.domain.Pessoa;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.server.ResponseStatusException;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Repository
 public class PessoaRepository {
+  private int contador = 0;
+  private final List<Pessoa> pessoaListDataBase = new ArrayList<>();
+  public void addNewPerson(Pessoa newPessoa) {
+    Optional<Pessoa> optionalPessoa = pessoaListDataBase.stream()
+        .filter(pessoa -> pessoa.getName().equals(newPessoa.getName()))
+        .filter(pessoa -> pessoa.getLastName().equals(newPessoa.getLastName()))
+        .filter(pessoa -> pessoa.getBirthDate().equals(newPessoa.getBirthDate()))
+        .findFirst();
 
-
-    private final List<Pessoa> pessoaListDataBase = new ArrayList<>();
-
-    public void addNewPerson(Pessoa newPessoa) {
-       pessoaListDataBase.forEach(pessoa1->{
-           if (pessoa1.getName().equals(newPessoa.getName()) && pessoa1.getLastName().equals(newPessoa.getLastName())
-                   && pessoa1.getBirthDate().equals(newPessoa.getBirthDate())) {
-               throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The person exist. " + newPessoa);
-           }
-       });
-
-        pessoaListDataBase.add(newPessoa);
+    if (optionalPessoa.isPresent()) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "The person exist. " + optionalPessoa.get());
     }
 
-    public List<Pessoa> buscarPessoas(String nomeDaPessoa) {
-        if (nomeDaPessoa == null) {
-            return pessoaListDataBase;
-        }
+    newPessoa.setId(getProximoIdPessoa());
+    pessoaListDataBase.add(newPessoa);
+  }
+  public List<Pessoa> buscarPessoas(String nomeDaPessoa) {
 
-
-        List<Pessoa> finalList = new ArrayList<>();
-
-       pessoaListDataBase.forEach(pessoa -> {
-           if (pessoa.getName().equals(nomeDaPessoa)) {
-               finalList.add(pessoa);
-           }
-       });
-
-        return finalList;
+    if (isNull(nomeDaPessoa)) {
+      return pessoaListDataBase;
     }
 
-    public String getPersonBirthDate(String nomeDaPessoa) {
+    return pessoaListDataBase.stream()
+        .filter(pessoa -> pessoa.getName().equals(nomeDaPessoa))
+        .collect(Collectors.toList());
 
-        for (int index = 0; index < pessoaListDataBase.size(); index++) {
-            Pessoa pessoa = pessoaListDataBase.get(index);
-            if (pessoa.getName().equals(nomeDaPessoa)) {
-                return pessoa.getBirthDate();
-            }
-        }
-        return null;
+  }
+  public void atualizarPessoa(Pessoa novaPessoa) {
+
+    Optional<Pessoa> optionalPessoa = pessoaListDataBase.stream()
+        .filter(pessoa -> pessoa.getId() == novaPessoa.getId())
+        .findFirst();
+
+    if (optionalPessoa.isEmpty()) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+          "Não foi possível atualizar. " + novaPessoa);
     }
 
-    public void atualizarPessoa(Pessoa novaPessoa) {
+    Pessoa pessoa = optionalPessoa.get();
+    pessoa.setName(novaPessoa.getName());
+    pessoa.setLastName(novaPessoa.getLastName());
+    pessoa.setBirthDate(novaPessoa.getBirthDate());
 
-        pessoaListDataBase.forEach(pessoaAntiga->{
-            if (pessoaAntiga.getId() == novaPessoa.getId()) {
-                pessoaAntiga.setName(novaPessoa.getName());
-                pessoaAntiga.setLastName(novaPessoa.getLastName());
-                pessoaAntiga.setBirthDate(novaPessoa.getBirthDate());
-                return;
-            }
-        });
+  }
+  public void delete(String name, String lastName) {
+    Optional<Pessoa> optionalPessoa = pessoaListDataBase.stream()
+        .filter(pessoa -> pessoa.getName().equals(name))
+        .filter(pessoa -> pessoa.getLastName().equals(lastName))
+        .findFirst();
 
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Não foi possível atualizar. " + novaPessoa);
+    if (optionalPessoa.isEmpty()) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+          "Pessoa não encontrada. " + name + " " + lastName);
     }
 
-    public void delete(String name, String lastName) {
+    pessoaListDataBase.remove(optionalPessoa.get());
+  }
 
-       pessoaListDataBase.forEach(pessoa -> {
-           if (pessoa.getName().equals(name) && pessoa.getLastName().equals(lastName)) {
-               pessoaListDataBase.remove(pessoa);
-               return;
-           }
-       });
+  private int getProximoIdPessoa() {
+    contador++;
+    return contador;
 
-        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Pessoa não encontrada. " + name + " " + lastName);
-    }
+  }
+
 }

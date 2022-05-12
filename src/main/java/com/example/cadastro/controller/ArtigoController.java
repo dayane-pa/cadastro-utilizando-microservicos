@@ -2,13 +2,18 @@ package com.example.cadastro.controller;
 
 import com.example.cadastro.domain.Artigo;
 import com.example.cadastro.repository.ArtigoRepository;
-import com.example.cadastro.repository.PessoaRepository;
+import java.util.List;
+import javax.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import javax.validation.Valid;
-import java.util.List;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 
 @RestController
@@ -20,13 +25,11 @@ public class ArtigoController {
   public ArtigoController(ArtigoRepository artigoRepository) {
     this.artigoRepository = artigoRepository;
   }
-
   @PostMapping()
   public ResponseEntity<Void> adicionarArtigo(@RequestBody @Valid Artigo artigo) {
     artigoRepository.adicionarArtigo(artigo);
     return new ResponseEntity<>(HttpStatus.CREATED);
   }
-
   @GetMapping()
   public ResponseEntity<List<Artigo>> pegarArtigo(
       @RequestParam(value = "nomedoautor", required = false) String nomeDoAutor,
@@ -37,6 +40,7 @@ public class ArtigoController {
     return new ResponseEntity<>(listaDeArtigo, HttpStatus.OK);
   }
 
+
   @PutMapping
   public ResponseEntity<Void> atualizaArtigo(@RequestBody Artigo artigo) {
 
@@ -44,6 +48,7 @@ public class ArtigoController {
 
     return new ResponseEntity<>(HttpStatus.ACCEPTED);
   }
+
 
   @DeleteMapping
   public ResponseEntity<Void> deletarArtigo(

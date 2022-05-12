@@ -1,53 +1,38 @@
 package com.example.cadastro.repository;
 
 
+import static java.util.Objects.nonNull;
+
 import com.example.cadastro.domain.Artigo;
 import com.example.cadastro.domain.Pessoa;
-import java.util.Date;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.server.ResponseStatusException;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Repository
 public class ArtigoRepository {
 
   private int contador = 0;
-
   private Pessoa pessoa = new Pessoa();
-
   private List<Artigo> listaDeArtigosPrincipal = new ArrayList<>();
 
-
   public void adicionarArtigo(Artigo novoArtigo) {
-
     Optional<Artigo> optionalArtigo = listaDeArtigosPrincipal.stream()
         .filter(artigo -> artigo.getTituloDoArtigo().equals(novoArtigo.getTituloDoArtigo()))
         .filter(artigo -> artigo.getAutor().getName().equals(novoArtigo.getAutor().getName()))
         .findFirst();
 
-    if (optionalArtigo.isPresent()){
+    if (optionalArtigo.isPresent()) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
           "Artigo já existente. " + optionalArtigo.get());
     }
 
-//    listaDeArtigosPrincipal.forEach(artigo -> {
-//
-//      if (artigo.getTituloDoArtigo().equals(novoArtigo.getTituloDoArtigo()) && artigo.getAutor()
-//          .getName().equals(novoArtigo.getAutor().getName())) {
-//        throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-//            "Artigo já existente. " + artigo);
-//      }
-//    });
-
     novoArtigo.setId(getProximoId());
     listaDeArtigosPrincipal.add(novoArtigo);
-
   }
 
   public List<Artigo> buscarArtigo(String nomeDoAutor, String tituloDoArtigo) {
@@ -58,83 +43,58 @@ public class ArtigoRepository {
 
     List<Artigo> artigosEncontrados = new ArrayList<>();
 
-    if (Objects.nonNull(nomeDoAutor)) {
+    if (nonNull(nomeDoAutor)) {
       artigosEncontrados.addAll(listaDeArtigosPrincipal.stream()
           .filter(artigo -> artigo.getAutor().getName().equals(nomeDoAutor))
           .collect(Collectors.toList()));
-
-      Long quantidade = listaDeArtigosPrincipal.stream()
-          .filter(artigo -> artigo.getAutor().getName().equals(nomeDoAutor))
-          .collect(Collectors.counting());
     }
 
-    if (Objects.nonNull(tituloDoArtigo)) {
+    if (nonNull(tituloDoArtigo)) {
       artigosEncontrados.addAll(listaDeArtigosPrincipal.stream()
           .filter(artigo -> artigo.getTituloDoArtigo().equals(tituloDoArtigo))
           .collect(Collectors.toList()));
     }
 
-//        listaDeArtigosPrincipal.forEach(artigo -> {
-//
-//            if (Objects.nonNull(nomeDoAutor)) {
-//                if (artigo.getAutor().getName().contains(nomeDoAutor)) {
-//                    artigosEncontrados.add(artigo);
-//                }
-//            }
-//
-//            if (Objects.nonNull(tituloDoArtigo)) {
-//                if (artigo.getTituloDoArtigo().contains(tituloDoArtigo)) {
-//                    artigosEncontrados.add(artigo);
-//                }
-//            }
-//        });
-
     if (artigosEncontrados.size() == 0) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-          "Não encontrado, dados incorretos. " + (Objects.nonNull(nomeDoAutor) ? nomeDoAutor : "")
-              + " " + (Objects.nonNull(tituloDoArtigo) ? tituloDoArtigo : ""));
+          "Não encontrado, dados incorretos. " + (nonNull(nomeDoAutor) ? nomeDoAutor : "") + " " +
+              (nonNull(tituloDoArtigo) ? tituloDoArtigo : ""));
     }
 
     return artigosEncontrados;
   }
-
-
   public void atualizarArtigo(Artigo novoArtigo) {
 
-    listaDeArtigosPrincipal.forEach(artigo -> {
+    Optional<Artigo> optionalArtigo = listaDeArtigosPrincipal.stream()
+        .filter(artigo -> artigo.getAutor().getName().equals(novoArtigo.getAutor().getName()))
+        .filter(artigo -> artigo.getDataDaPublicacao().equals(novoArtigo.getDataDaPublicacao()))
+        .findFirst();
 
-      if (artigo.getAutor().getName().equals(novoArtigo.getAutor().getName())
-          && artigo.getDataDaPublicacao().equals(novoArtigo.getDataDaPublicacao())) {
+    if (optionalArtigo.isEmpty()) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+          "Artigo não pode ser alterado, verifique o nome do " + "autor e data " + novoArtigo);
+    }
 
-        artigo.setTituloDoArtigo(novoArtigo.getTituloDoArtigo());
-        artigo.setCorpo(novoArtigo.getCorpo());
-        return;
-      }
-    });
-
-    throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-        "Artigo não pode ser alterado, verifique o nome do " + "autor e data " + novoArtigo);
+    Artigo artigo = optionalArtigo.get();
+    artigo.setTituloDoArtigo(novoArtigo.getTituloDoArtigo());
+    artigo.setCorpo(novoArtigo.getCorpo());
 
   }
 
   public void deletarArtigo(String tituloDoArtigo, String nomeDoAutor) {
+    Optional<Artigo> optionalArtigo = listaDeArtigosPrincipal.stream()
+        .filter(artigo -> artigo.getTituloDoArtigo().equals(tituloDoArtigo))
+        .filter(artigo -> artigo.getAutor().getName().equals(nomeDoAutor))
+        .findFirst();
 
-    for (Artigo artigo : listaDeArtigosPrincipal) {
-      if (artigo.getTituloDoArtigo().equals(tituloDoArtigo) && artigo.getAutor().getName()
-          .equals(nomeDoAutor)) {
-        listaDeArtigosPrincipal.remove(artigo);
-        return;
-      }
+    if (optionalArtigo.isEmpty()) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Artigo não pode ser deletado");
     }
-
-    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Artigo não pode ser deletado");
+    listaDeArtigosPrincipal.remove(optionalArtigo.get());
   }
-
   private int getProximoId() {
     contador++;
     return contador;
   }
-// TODO: 11/05/22 criar um id sequencial para pessoa, Fazer stream em todos os "for"
+
 }
-
-
