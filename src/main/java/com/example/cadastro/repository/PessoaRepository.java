@@ -8,29 +8,22 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Repository;
-import org.springframework.web.server.ResponseStatusException;
 
 @Repository
 public class PessoaRepository {
 
   private final List<Pessoa> pessoaListDataBase = new ArrayList<>();
 
-  public void addNewPerson(Pessoa newPessoa) {
+  public boolean addNewPerson(Pessoa newPessoa) {
     Optional<Pessoa> optionalPessoa = pessoaListDataBase.stream()
         .filter(pessoa -> pessoa.getName().equals(newPessoa.getName()))
         .filter(pessoa -> pessoa.getLastName().equals(newPessoa.getLastName()))
         .filter(pessoa -> pessoa.getBirthDate().equals(newPessoa.getBirthDate()))
         .findFirst();
 
-    if (optionalPessoa.isPresent()) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-          "The person exist. " + optionalPessoa.get());
-    }
-
     newPessoa.setId(ContadorUtil.contadorId());
-    pessoaListDataBase.add(newPessoa);
+   return pessoaListDataBase.add(newPessoa);
   }
 
   public List<Pessoa> buscarPessoas(String nomeDaPessoa) {
@@ -45,36 +38,30 @@ public class PessoaRepository {
 
   }
 
-  public void atualizarPessoa(Pessoa novaPessoa) {
+  public boolean atualizarPessoa(Pessoa novaPessoa) {
 
     Optional<Pessoa> optionalPessoa = pessoaListDataBase.stream()
         .filter(pessoa -> pessoa.getId() == novaPessoa.getId())
         .findFirst();
 
     if (optionalPessoa.isEmpty()) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-          "Não foi possível atualizar. " + novaPessoa);
+      return false;
     }
 
     Pessoa pessoa = optionalPessoa.get();
     pessoa.setName(novaPessoa.getName());
     pessoa.setLastName(novaPessoa.getLastName());
     pessoa.setBirthDate(novaPessoa.getBirthDate());
-
+    return true;
   }
 
-  public void delete(String name, String lastName) {
+  public boolean delete(String name, String lastName) {
     Optional<Pessoa> optionalPessoa = pessoaListDataBase.stream()
         .filter(pessoa -> pessoa.getName().equals(name))
         .filter(pessoa -> pessoa.getLastName().equals(lastName))
         .findFirst();
 
-    if (optionalPessoa.isEmpty()) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-          "Pessoa não encontrada. " + name + " " + lastName);
-    }
-
-    pessoaListDataBase.remove(optionalPessoa.get());
+   return pessoaListDataBase.remove(optionalPessoa.get());
   }
 
 }

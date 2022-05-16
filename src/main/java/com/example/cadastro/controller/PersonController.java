@@ -40,19 +40,35 @@ public class PersonController {
   }
   @PostMapping
   public ResponseEntity<Void> addPerson(@RequestBody @Valid Pessoa pessoa) {
-    pessoaRepository.addNewPerson(pessoa);
+    boolean adicionado = pessoaRepository.addNewPerson(pessoa);
+
+    if (!adicionado) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+          "The person exist. " + pessoa);
+    }
+
     return new ResponseEntity<>(HttpStatus.CREATED);
   }
   @PutMapping
   public ResponseEntity<Void> putPerson(@RequestBody Pessoa pessoa) {
-    pessoaRepository.atualizarPessoa(pessoa);
+    boolean atualizada = pessoaRepository.atualizarPessoa(pessoa);
+
+    if (!atualizada) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+          "Não foi possível atualizar. " + pessoa);
+    }
     return new ResponseEntity<>(HttpStatus.ACCEPTED);
   }
   @DeleteMapping
   public ResponseEntity<Void> deletePerson(@RequestParam("name") String name,
       @RequestParam("lastName")
       String lastName) {
-    pessoaRepository.delete(name, lastName);
+    boolean deletado = pessoaRepository.delete(name, lastName);
+
+    if (!deletado) {
+      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+          "Pessoa não encontrada. " + name + " " + lastName);
+    }
     return new ResponseEntity<>(HttpStatus.OK);
   }
 }
