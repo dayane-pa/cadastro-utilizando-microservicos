@@ -10,9 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Repository;
-import org.springframework.web.server.ResponseStatusException;
 
 @Repository
 public class ArtigoRepository {
@@ -20,17 +18,12 @@ public class ArtigoRepository {
   private Pessoa pessoa = new Pessoa();
   private List<Artigo> listaDeArtigosPrincipal = new ArrayList<>();
 
-  public void adicionarArtigo(Artigo novoArtigo) {
+  public boolean adicionarArtigo(Artigo novoArtigo) {
     Optional<Artigo> optionalArtigo = filteArtigo(novoArtigo.getTituloDoArtigo(),
         novoArtigo.getAutor().getName());
 
-    if (optionalArtigo.isPresent()) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-          "Artigo já existente. " + optionalArtigo.get());
-    }
-
     novoArtigo.setId(ContadorUtil.contadorId());
-    listaDeArtigosPrincipal.add(novoArtigo);
+    return listaDeArtigosPrincipal.add(novoArtigo);
   }
 
   public List<Artigo> buscarArtigo(String nomeDoAutor, String tituloDoArtigo) {
@@ -53,15 +46,10 @@ public class ArtigoRepository {
           .collect(Collectors.toList()));
     }
 
-    if (artigosEncontrados.size() == 0) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-          "Não encontrado, dados incorretos. " + (nonNull(nomeDoAutor) ? nomeDoAutor : "") + " " +
-              (nonNull(tituloDoArtigo) ? tituloDoArtigo : ""));
-    }
-
     return artigosEncontrados;
   }
-  public void atualizarArtigo(Artigo novoArtigo) {
+
+  public boolean atualizarArtigo(Artigo novoArtigo) {
 
     Optional<Artigo> optionalArtigo = listaDeArtigosPrincipal.stream()
         .filter(artigo -> artigo.getAutor().getName().equals(novoArtigo.getAutor().getName()))
@@ -69,23 +57,18 @@ public class ArtigoRepository {
         .findFirst();
 
     if (optionalArtigo.isEmpty()) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-          "Artigo não pode ser alterado, verifique o nome do " + "autor e data " + novoArtigo);
+      return false;
     }
-
     Artigo artigo = optionalArtigo.get();
     artigo.setTituloDoArtigo(novoArtigo.getTituloDoArtigo());
     artigo.setCorpo(novoArtigo.getCorpo());
-
+    return true;
   }
 
-  public void deletarArtigo(String tituloDoArtigo, String nomeDoAutor) {
+  public boolean deletarArtigo(String tituloDoArtigo, String nomeDoAutor) {
     Optional<Artigo> optionalArtigo = filteArtigo(tituloDoArtigo, nomeDoAutor);
 
-    if (optionalArtigo.isEmpty()) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Artigo não pode ser deletado");
-    }
-    listaDeArtigosPrincipal.remove(optionalArtigo.get());
+    return listaDeArtigosPrincipal.remove(optionalArtigo.get());
   }
 
   private Optional<Artigo> filteArtigo(String tituloDoArtigo, String nomeDoAutor) {
