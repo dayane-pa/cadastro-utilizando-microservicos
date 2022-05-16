@@ -5,6 +5,7 @@ import static java.util.Objects.nonNull;
 
 import com.example.cadastro.domain.Artigo;
 import com.example.cadastro.domain.Pessoa;
+import com.example.cadastro.util.ContadorUtil;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -16,22 +17,19 @@ import org.springframework.web.server.ResponseStatusException;
 @Repository
 public class ArtigoRepository {
 
-  private int contador = 0;
   private Pessoa pessoa = new Pessoa();
   private List<Artigo> listaDeArtigosPrincipal = new ArrayList<>();
 
   public void adicionarArtigo(Artigo novoArtigo) {
-    Optional<Artigo> optionalArtigo = listaDeArtigosPrincipal.stream()
-        .filter(artigo -> artigo.getTituloDoArtigo().equals(novoArtigo.getTituloDoArtigo()))
-        .filter(artigo -> artigo.getAutor().getName().equals(novoArtigo.getAutor().getName()))
-        .findFirst();
+    Optional<Artigo> optionalArtigo = filteArtigo(novoArtigo.getTituloDoArtigo(),
+        novoArtigo.getAutor().getName());
 
     if (optionalArtigo.isPresent()) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
           "Artigo já existente. " + optionalArtigo.get());
     }
 
-    novoArtigo.setId(getProximoId());
+    novoArtigo.setId(ContadorUtil.contadorId());
     listaDeArtigosPrincipal.add(novoArtigo);
   }
 
@@ -82,19 +80,19 @@ public class ArtigoRepository {
   }
 
   public void deletarArtigo(String tituloDoArtigo, String nomeDoAutor) {
-    Optional<Artigo> optionalArtigo = listaDeArtigosPrincipal.stream()
-        .filter(artigo -> artigo.getTituloDoArtigo().equals(tituloDoArtigo))
-        .filter(artigo -> artigo.getAutor().getName().equals(nomeDoAutor))
-        .findFirst();
+    Optional<Artigo> optionalArtigo = filteArtigo(tituloDoArtigo, nomeDoAutor);
 
     if (optionalArtigo.isEmpty()) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Artigo não pode ser deletado");
     }
     listaDeArtigosPrincipal.remove(optionalArtigo.get());
   }
-  private int getProximoId() {
-    contador++;
-    return contador;
+
+  private Optional<Artigo> filteArtigo(String tituloDoArtigo, String nomeDoAutor) {
+    return listaDeArtigosPrincipal.stream()
+        .filter(artigo -> artigo.getTituloDoArtigo().equals(tituloDoArtigo))
+        .filter(artigo -> artigo.getAutor().getName().equals(nomeDoAutor))
+        .findFirst();
   }
 
 }
