@@ -5,7 +5,6 @@ import static java.util.Objects.nonNull;
 
 import com.example.cadastro.domain.Artigo;
 import com.example.cadastro.domain.Pessoa;
-import com.example.cadastro.util.ContadorUtil;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -13,7 +12,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public class ArtigoRepository {
+public class ArtigoRepositoryInMemory {
 
   private Pessoa pessoa = new Pessoa();
   private List<Artigo> listaDeArtigosPrincipal = new ArrayList<>();
@@ -22,7 +21,7 @@ public class ArtigoRepository {
     Optional<Artigo> optionalArtigo = filteArtigo(novoArtigo.getTituloDoArtigo(),
         novoArtigo.getAutor().getName());
 
-    novoArtigo.setId(ContadorUtil.contadorId());
+   // novoArtigo.setId(ContadorUtil.contadorId());
     return listaDeArtigosPrincipal.add(novoArtigo);
   }
 

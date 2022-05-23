@@ -1,0 +1,14 @@
+spring:
+  datasource:
+    driverClassName: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://172.17.0.2:3306/cadastro
+    username: root
+    password: cmn52q71
+  jpa:
+    hibernate.ddl-auto: update
+    generate-ddl: true
+    show-sql: true
+server:
+  error:
+    include-message: always
+

@@ -1,9 +1,10 @@
 package com.example.cadastro.controller;
 
+import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
 import com.example.cadastro.domain.Artigo;
-import com.example.cadastro.repository.ArtigoRepository;
+import com.example.cadastro.repository.ArtigoRepositoryDB;
 import java.util.List;
 import javax.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -23,17 +24,17 @@ import org.springframework.web.server.ResponseStatusException;
 @RequestMapping("/artigo")
 public class ArtigoController {
 
-  private ArtigoRepository artigoRepository;
+  private ArtigoRepositoryDB artigoRepositoryDB;
 
-  public ArtigoController(ArtigoRepository artigoRepository) {
-    this.artigoRepository = artigoRepository;
+  public ArtigoController(ArtigoRepositoryDB artigoRepositoryDB) {
+    this.artigoRepositoryDB = artigoRepositoryDB;
   }
 
   @PostMapping()
   public ResponseEntity<Void> adicionarArtigo(@RequestBody @Valid Artigo artigo) {
-    boolean adicionado = artigoRepository.adicionarArtigo(artigo);
+    Artigo artigoAdicionado = artigoRepositoryDB.save(artigo);
 
-    if (!adicionado) {
+    if (isNull(artigoAdicionado)) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
           "Artigo já existente. " + artigo);
     }
@@ -45,7 +46,7 @@ public class ArtigoController {
       @RequestParam(value = "nomedoautor", required = false) String nomeDoAutor,
       @RequestParam(value = "nomedotitulo", required = false) String tituloDoArtigo) {
 
-    List<Artigo> listaDeArtigo = artigoRepository.buscarArtigo(nomeDoAutor, tituloDoArtigo);
+    List<Artigo> listaDeArtigo = (List<Artigo>) artigoRepositoryDB.findAll();
 
     if (listaDeArtigo.size() == 0) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
@@ -59,9 +60,9 @@ public class ArtigoController {
   @PutMapping
   public ResponseEntity<Void> atualizaArtigo(@RequestBody Artigo artigo) {
 
-    boolean atualizou = artigoRepository.atualizarArtigo(artigo);
+    Artigo pessoaAtualizada = artigoRepositoryDB.save(artigo);
 
-    if (!atualizou) {
+    if (isNull(pessoaAtualizada)) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
           "Artigo não pode ser alterado, verifique o nome do " + "autor e data " + artigo);
     }
@@ -70,16 +71,11 @@ public class ArtigoController {
   }
 
   @DeleteMapping
-  public ResponseEntity<Void> deletarArtigo(
-      @RequestParam(value = "titulodoartigo") String tituloDoArtigo,
-      @RequestParam(value = "nomedoautor") String nomeDoAutor) {
+  public ResponseEntity<Void> deletarArtigo(@RequestParam(value = "id") Long id) {
 
-    boolean deletou = artigoRepository.deletarArtigo(tituloDoArtigo, nomeDoAutor);
+    artigoRepositoryDB.deleteById(id);
+    return new ResponseEntity<> (HttpStatus.OK);
 
-    if (!deletou) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Artigo não pode ser deletado");
-    }
-
-    return new ResponseEntity<>(HttpStatus.OK);
   }
 }
+

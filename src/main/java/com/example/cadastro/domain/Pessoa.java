@@ -5,6 +5,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -28,5 +29,10 @@ public class Pessoa {
 
   @Column(name = "birth_date", length = 10)
   private String birthDate;
+
+  @Email(message = "{email.valid}")
+  @Column(unique = true)
+  @NotBlank(message = "{email.not.blank}")
+  private String email;
 
 }

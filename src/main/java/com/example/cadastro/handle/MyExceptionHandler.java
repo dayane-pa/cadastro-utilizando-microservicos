@@ -2,6 +2,8 @@ package com.example.cadastro.handle;
 
 import java.util.HashMap;
 import java.util.Map;
+import org.hibernate.exception.ConstraintViolationException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -14,7 +16,7 @@ public class MyExceptionHandler {
 
 
   @ResponseStatus(HttpStatus.BAD_REQUEST)
-  @ExceptionHandler(MethodArgumentNotValidException.class)
+  @ExceptionHandler({MethodArgumentNotValidException.class})
   public Map<String, String> handValidationException(MethodArgumentNotValidException exception) {
     Map<String, String> errors = new HashMap<>();
     exception.getBindingResult().getAllErrors().forEach((error) -> {
@@ -24,6 +26,25 @@ public class MyExceptionHandler {
 
     });
     return errors;
-
   }
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  @ExceptionHandler({ConstraintViolationException.class})
+  public Map<String, String> handleConstraintViolationException(
+      ConstraintViolationException exception) {
+    Map<String, String> errors = new HashMap<>();
+
+    errors.put(exception.getConstraintName(), exception.getSQLException().getLocalizedMessage());
+    return errors;
+  }
+
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  @ExceptionHandler({EmptyResultDataAccessException.class})
+  public Map<String, String> handleEmptyResultDataAccessException(
+      EmptyResultDataAccessException exception) {
+    Map<String, String> error = new HashMap<>();
+
+    error.put("Erro ao executar operação", exception.getLocalizedMessage());
+    return error;
+  }
+
 }

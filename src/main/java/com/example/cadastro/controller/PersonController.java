@@ -1,7 +1,9 @@
 package com.example.cadastro.controller;
 
+import static java.util.Objects.isNull;
+
 import com.example.cadastro.domain.Pessoa;
-import com.example.cadastro.repository.PessoaRepository;
+import com.example.cadastro.repository.PessoaRepositoryDB;
 import java.util.List;
 import javax.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -20,55 +22,54 @@ import org.springframework.web.server.ResponseStatusException;
 @RequestMapping("/person")
 public class PersonController {
 
-  private PessoaRepository pessoaRepository;
+  private PessoaRepositoryDB repository;
 
-  public PersonController(PessoaRepository pessoaRepository) {
-    this.pessoaRepository = pessoaRepository;
+  public PersonController(PessoaRepositoryDB repository) {
+    this.repository = repository;
   }
 
   @GetMapping()
-  public ResponseEntity<List<Pessoa>> buscarPessoas(@RequestParam(value = "name", required = false)
+  public ResponseEntity buscarPessoas(@RequestParam(value = "name", required = false)
   String nomeDaPessoa) {
 
-    List<Pessoa> listaDePessoas = pessoaRepository.buscarPessoas(nomeDaPessoa);
+    List<Pessoa> pessoaList = (List<Pessoa>) repository.findAll();
 
-    if (listaDePessoas.size() == 0) {
+    if (pessoaList.size() == 0) {
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, "pessoa não encontrada. ");
     }
-    return new ResponseEntity<>(listaDePessoas, HttpStatus.OK);
+    return new ResponseEntity<>(pessoaList, HttpStatus.OK);
 
   }
+
   @PostMapping
   public ResponseEntity<Void> addPerson(@RequestBody @Valid Pessoa pessoa) {
-    boolean adicionado = pessoaRepository.addNewPerson(pessoa);
 
-    if (!adicionado) {
+    Pessoa pessoaSalva = repository.save(pessoa);
+
+    if (isNull(pessoaSalva)) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
           "The person exist. " + pessoa);
     }
 
     return new ResponseEntity<>(HttpStatus.CREATED);
   }
+
   @PutMapping
   public ResponseEntity<Void> putPerson(@RequestBody Pessoa pessoa) {
-    boolean atualizada = pessoaRepository.atualizarPessoa(pessoa);
 
-    if (!atualizada) {
+    Pessoa pessoaAtualizada = repository.save(pessoa);
+
+    if (isNull(pessoaAtualizada)) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
           "Não foi possível atualizar. " + pessoa);
     }
     return new ResponseEntity<>(HttpStatus.ACCEPTED);
   }
-  @DeleteMapping
-  public ResponseEntity<Void> deletePerson(@RequestParam("name") String name,
-      @RequestParam("lastName")
-      String lastName) {
-    boolean deletado = pessoaRepository.delete(name, lastName);
 
-    if (!deletado) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-          "Pessoa não encontrada. " + name + " " + lastName);
-    }
+  @DeleteMapping
+  public ResponseEntity<Void> deletePerson(@RequestParam(value = "id") long id) {
+
+    repository.deleteById(id);
     return new ResponseEntity<>(HttpStatus.OK);
   }
 }
