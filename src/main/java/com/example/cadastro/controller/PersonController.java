@@ -5,6 +5,7 @@ import static java.util.Objects.isNull;
 import com.example.cadastro.domain.Pessoa;
 import com.example.cadastro.repository.PessoaRepositoryDB;
 import java.util.List;
+import java.util.Optional;
 import javax.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,16 +30,31 @@ public class PersonController {
   }
 
   @GetMapping()
-  public ResponseEntity buscarPessoas(@RequestParam(value = "name", required = false)
-  String nomeDaPessoa) {
+  public ResponseEntity<List<Pessoa>> buscarPessoas(@RequestParam(value = "name", required = true)
+  String nomeDaPessoa, @RequestParam(value = "lastname", required = true) String lastName) {
 
-    List<Pessoa> pessoaList = (List<Pessoa>) repository.findAll();
+    Optional<List<Pessoa>> pessoasOptional = repository.findByNameAndLastName(nomeDaPessoa,
+        lastName);
 
-    if (pessoaList.size() == 0) {
-      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "pessoa não encontrada. ");
+    if (pessoasOptional.isPresent()) {
+
+      return new ResponseEntity<>(pessoasOptional.get(), HttpStatus.OK);
     }
-    return new ResponseEntity<>(pessoaList, HttpStatus.OK);
 
+    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "pessoa não encontrada. ");
+  }
+
+  @GetMapping("/list")
+  public ResponseEntity<List<Pessoa>> buscarTodasPessoas() {
+
+    List<Pessoa> pessoas = repository.findAll();
+
+    if (pessoas.size() > 0) {
+
+      return new ResponseEntity<>(pessoas, HttpStatus.OK);
+    }
+
+    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "pessoa não encontrada. ");
   }
 
   @PostMapping
