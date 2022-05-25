@@ -6,6 +6,7 @@ import static java.util.Objects.nonNull;
 import com.example.cadastro.domain.Artigo;
 import com.example.cadastro.repository.ArtigoRepositoryDB;
 import java.util.List;
+import java.util.Optional;
 import javax.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -42,19 +43,35 @@ public class ArtigoController {
   }
 
   @GetMapping()
-  public ResponseEntity<List<Artigo>> pegarArtigo(
-      @RequestParam(value = "nomedoautor", required = false) String nomeDoAutor,
-      @RequestParam(value = "nomedotitulo", required = false) String tituloDoArtigo) {
+  public ResponseEntity<List<Artigo>> pegarArtigos(
+      @RequestParam(value = "titulodoartigo'", required = true) String tituloDoArtigo) {
 
-    List<Artigo> listaDeArtigo = (List<Artigo>) artigoRepositoryDB.findAll();
+    Optional<List<Artigo>> optionalArtigo = artigoRepositoryDB.findByTituloDoArtigo(tituloDoArtigo);
 
-    if (listaDeArtigo.size() == 0) {
-      throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-          "Não encontrado, dados incorretos. " + (nonNull(nomeDoAutor) ? nomeDoAutor : "") + " " +
-              (nonNull(tituloDoArtigo) ? tituloDoArtigo : ""));
+
+    if (optionalArtigo.isPresent()) {
+      return new ResponseEntity<>(optionalArtigo.get(), HttpStatus.OK);
+
     }
 
-    return new ResponseEntity<>(listaDeArtigo, HttpStatus.OK);
+    throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+        "Não encontrado, dados incorretos. " + " " +
+            (nonNull(tituloDoArtigo) ? tituloDoArtigo : ""));
+  }
+
+  @GetMapping("/list")
+  public ResponseEntity<List<Artigo>> pegarTodosArtigos() {
+
+    List<Artigo> listaDeArtigo = artigoRepositoryDB.findAll();
+
+
+    if (listaDeArtigo.size() > 0) {
+      return new ResponseEntity<>(listaDeArtigo, HttpStatus.OK);
+
+    }
+
+    throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+        "Não encontrado, dados incorretos. " );
   }
 
   @PutMapping
@@ -74,7 +91,7 @@ public class ArtigoController {
   public ResponseEntity<Void> deletarArtigo(@RequestParam(value = "id") Long id) {
 
     artigoRepositoryDB.deleteById(id);
-    return new ResponseEntity<> (HttpStatus.OK);
+    return new ResponseEntity<>(HttpStatus.OK);
 
   }
 }
