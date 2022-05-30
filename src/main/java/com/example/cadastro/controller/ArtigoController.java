@@ -27,6 +27,7 @@ public class ArtigoController {
 
   private ArtigoRepositoryDB artigoRepositoryDB;
 
+
   public ArtigoController(ArtigoRepositoryDB artigoRepositoryDB) {
     this.artigoRepositoryDB = artigoRepositoryDB;
   }
@@ -43,15 +44,15 @@ public class ArtigoController {
   }
 
   @GetMapping()
-  public ResponseEntity<List<Artigo>> pegarArtigos(
-      @RequestParam(value = "titulodoartigo'", required = true) String tituloDoArtigo) {
+  public ResponseEntity<List<Artigo>> pegarArtigoId(
+      @RequestParam(value = "titulodoartigo", required = true) String tituloDoArtigo) {
 
-    Optional<List<Artigo>> optionalArtigo = artigoRepositoryDB.findByTituloDoArtigo(tituloDoArtigo);
-
+    Optional<List<Artigo>> optionalArtigo = artigoRepositoryDB.findBytituloDoArtigo(tituloDoArtigo);
 
     if (optionalArtigo.isPresent()) {
-      return new ResponseEntity<>(optionalArtigo.get(), HttpStatus.OK);
 
+      artigoRepositoryDB.findBytituloDoArtigo(tituloDoArtigo);
+      return new ResponseEntity<>(optionalArtigo.get(), HttpStatus.OK);
     }
 
     throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
@@ -59,30 +60,45 @@ public class ArtigoController {
             (nonNull(tituloDoArtigo) ? tituloDoArtigo : ""));
   }
 
+  @GetMapping("/getId")
+  public ResponseEntity<Artigo> pegarArtigoId(
+      @RequestParam(value = "id", required = true) long id) {
+
+    Optional<Artigo> optionalArtigo = artigoRepositoryDB.findById(id);
+
+    if (optionalArtigo.isPresent()) {
+      Artigo artigo = atualizarViewls(optionalArtigo);
+      return new ResponseEntity<>(artigo, HttpStatus.OK);
+    }
+
+    throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+        "Não encontrado, dados incorretos. " + " " +
+            (nonNull(optionalArtigo) ? optionalArtigo : ""));
+  }
+
   @GetMapping("/list")
   public ResponseEntity<List<Artigo>> pegarTodosArtigos() {
 
     List<Artigo> listaDeArtigo = artigoRepositoryDB.findAll();
 
-
     if (listaDeArtigo.size() > 0) {
       return new ResponseEntity<>(listaDeArtigo, HttpStatus.OK);
 
     }
-
     throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-        "Não encontrado, dados incorretos. " );
+        "Não encontrado, dados incorretos. ");
   }
 
   @PutMapping
   public ResponseEntity<Void> atualizaArtigo(@RequestBody Artigo artigo) {
 
-    Artigo pessoaAtualizada = artigoRepositoryDB.save(artigo);
+    Optional<Artigo> artigoEncontrado = artigoRepositoryDB.findById(artigo.getId());
 
-    if (isNull(pessoaAtualizada)) {
+    if (artigoEncontrado.isEmpty()) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
           "Artigo não pode ser alterado, verifique o nome do " + "autor e data " + artigo);
     }
+    artigoRepositoryDB.save(artigo);
 
     return new ResponseEntity<>(HttpStatus.ACCEPTED);
   }
@@ -94,5 +110,14 @@ public class ArtigoController {
     return new ResponseEntity<>(HttpStatus.OK);
 
   }
+
+  private Artigo atualizarViewls(Optional<Artigo> optionalArtigo) {
+    Artigo artigo = optionalArtigo.get();
+    Long views = artigo.getViews();
+    views++;
+    artigo.setViews(views);
+    return artigoRepositoryDB.save(artigo);
+  }
+
 }
 

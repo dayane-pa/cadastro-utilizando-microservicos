@@ -12,4 +12,6 @@ public interface PessoaRepositoryDB extends CrudRepository<Pessoa, Long> {
   Optional<List<Pessoa>> findByNameAndLastName(String name, String lastName);
 
   List<Pessoa> findAll ();
+
+  Optional<Pessoa> findById(long Id);
 }
