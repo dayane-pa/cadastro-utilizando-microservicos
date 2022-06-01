@@ -51,7 +51,6 @@ public class PersonController {
     Optional<Pessoa> pessoasOptional = pessoaRepositoryDB.findById(id);
 
     if (pessoasOptional.isPresent()) {
-      Pessoa pessoa = buscarPessoaPorId(pessoasOptional);
       return new ResponseEntity<>(pessoasOptional.get(), HttpStatus.OK);
     }
 
@@ -105,13 +104,5 @@ public class PersonController {
     return new ResponseEntity<>(HttpStatus.OK);
   }
 
-  private Pessoa buscarPessoaPorId(Optional<Pessoa> pessoasOptional) {
-    Pessoa pessoa = pessoasOptional.get();
-    Long viewsPessoa = Optional.ofNullable(pessoa.getViewsPessoa()).orElse(0L);
-    viewsPessoa++;
-    pessoa.setViewsPessoa(viewsPessoa);
-    pessoaRepositoryDB.save(pessoa);
-    return pessoa;
-  }
 
 }

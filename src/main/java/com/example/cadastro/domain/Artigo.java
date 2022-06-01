@@ -1,8 +1,6 @@
 package com.example.cadastro.domain;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -22,7 +20,6 @@ import org.springframework.format.annotation.DateTimeFormat.ISO;
 @AllArgsConstructor
 @Data
 @Entity(name = "Artigo")
-@JsonInclude(Include.NON_NULL)
 public class Artigo {
 
   @Id

@@ -35,7 +35,4 @@ public class Pessoa {
   @NotBlank(message = "{email.not.blank}")
   private String email;
 
-  @Column(nullable = true)
-  private Long viewsPessoa;
-
 }
