@@ -2,7 +2,7 @@ package com.example.cadastro.controller;
 
 import static java.util.Objects.isNull;
 
-import com.example.cadastro.domain.Pessoa;
+import com.example.cadastro.domain.PessoaEntity;
 import com.example.cadastro.repository.PessoaRepositoryDB;
 import java.util.List;
 import java.util.Optional;
@@ -31,10 +31,10 @@ public class PersonController {
   }
 
   @GetMapping()
-  public ResponseEntity<List<Pessoa>> buscarPessoas(@RequestParam(value = "name", required = true)
+  public ResponseEntity<List<PessoaEntity>> buscarPessoas(@RequestParam(value = "name", required = true)
   String nomeDaPessoa, @RequestParam(value = "lastname", required = true) String lastName) {
 
-    Optional<List<Pessoa>> pessoasOptional = pessoaRepositoryDB.findByNameAndLastName(nomeDaPessoa,
+    Optional<List<PessoaEntity>> pessoasOptional = pessoaRepositoryDB.findByNameAndLastName(nomeDaPessoa,
         lastName);
 
     if (pessoasOptional.isPresent()) {
@@ -46,9 +46,9 @@ public class PersonController {
   }
 
   @GetMapping("/{id}")
-  public ResponseEntity<Pessoa> quantidadeDeViews(@PathVariable(value = "id")  Long id) {
+  public ResponseEntity<PessoaEntity> quantidadeDeViews(@PathVariable(value = "id")  Long id) {
 
-    Optional<Pessoa> pessoasOptional = pessoaRepositoryDB.findById(id);
+    Optional<PessoaEntity> pessoasOptional = pessoaRepositoryDB.findById(id);
 
     if (pessoasOptional.isPresent()) {
       return new ResponseEntity<>(pessoasOptional.get(), HttpStatus.OK);
@@ -59,41 +59,41 @@ public class PersonController {
 
 
   @GetMapping("/list")
-  public ResponseEntity<List<Pessoa>> buscarTodasPessoas() {
+  public ResponseEntity<List<PessoaEntity>> buscarTodasPessoas() {
 
-    List<Pessoa> pessoas = pessoaRepositoryDB.findAll();
+    List<PessoaEntity> pessoaEntities = pessoaRepositoryDB.findAll();
 
-    if (pessoas.size() > 0) {
+    if (pessoaEntities.size() > 0) {
 
-      return new ResponseEntity<>(pessoas, HttpStatus.OK);
+      return new ResponseEntity<>(pessoaEntities, HttpStatus.OK);
     }
 
     throw new ResponseStatusException(HttpStatus.NOT_FOUND, "pessoa não encontrada. ");
   }
 
   @PostMapping
-  public ResponseEntity<Void> addPerson(@RequestBody @Valid Pessoa pessoa) {
+  public ResponseEntity<Void> addPerson(@RequestBody @Valid PessoaEntity pessoaEntity) {
 
-    Pessoa pessoaSalva = pessoaRepositoryDB.save(pessoa);
+    PessoaEntity pessoaEntitySalva = pessoaRepositoryDB.save(pessoaEntity);
 
-    if (isNull(pessoaSalva)) {
+    if (isNull(pessoaEntitySalva)) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-          "The person exist. " + pessoa);
+          "The person exist. " + pessoaEntity);
     }
 
     return new ResponseEntity<>(HttpStatus.CREATED);
   }
 
   @PutMapping
-  public ResponseEntity<Void> putPerson(@RequestBody Pessoa pessoa) {
+  public ResponseEntity<Void> putPerson(@RequestBody PessoaEntity pessoaEntity) {
 
-    Optional<Pessoa> pessoaExistenteOptional = pessoaRepositoryDB.findById(pessoa.getId());
+    Optional<PessoaEntity> pessoaExistenteOptional = pessoaRepositoryDB.findById(pessoaEntity.getId());
 
     if (pessoaExistenteOptional.isEmpty()) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
           "Não foi possível atualizar. " + pessoaExistenteOptional.get());
     }
-    pessoaRepositoryDB.save(pessoa);
+    pessoaRepositoryDB.save(pessoaEntity);
     return new ResponseEntity<>(HttpStatus.ACCEPTED);
   }
 

@@ -3,12 +3,15 @@ package com.example.cadastro.controller;
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
 
-import com.example.cadastro.domain.Artigo;
+import com.example.cadastro.converters.ArtigoConverter;
+import com.example.cadastro.domain.ArtigoEntity;
+import com.example.cadastro.dto.ArtigoDto;
 import com.example.cadastro.repository.ArtigoRepositoryDB;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import javax.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,28 +33,30 @@ import org.springframework.web.server.ResponseStatusException;
 public class ArtigoController {
 
   private ArtigoRepositoryDB artigoRepositoryDB;
+  private ArtigoConverter artigoConverter;
 
-
-  public ArtigoController(ArtigoRepositoryDB artigoRepositoryDB) {
+  public ArtigoController(ArtigoRepositoryDB artigoRepositoryDB, ArtigoConverter artigoConverter) {
     this.artigoRepositoryDB = artigoRepositoryDB;
+    this.artigoConverter = artigoConverter;
   }
 
   @PostMapping()
-  public ResponseEntity<Void> adicionarArtigo(@RequestBody @Valid Artigo artigo) {
-    Artigo artigoAdicionado = artigoRepositoryDB.save(artigo);
+  public ResponseEntity<Void> adicionarArtigo(@RequestBody @Valid ArtigoEntity artigoEntity) {
+    ArtigoEntity artigoEntityAdicionado = artigoRepositoryDB.save(artigoEntity);
 
-    if (isNull(artigoAdicionado)) {
+    if (isNull(artigoEntityAdicionado)) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-          "Artigo já existente. " + artigo);
+          "Artigo já existente. " + artigoEntity);
     }
     return new ResponseEntity<>(HttpStatus.CREATED);
   }
 
   @GetMapping()
-  public ResponseEntity<List<Artigo>> pegarArtigo(
+  public ResponseEntity<List<ArtigoEntity>> pegarArtigo(
       @RequestParam(value = "titulodoartigo", required = true) String tituloDoArtigo) {
 
-    Optional<List<Artigo>> optionalArtigo = artigoRepositoryDB.findBytituloDoArtigo(tituloDoArtigo);
+    Optional<List<ArtigoEntity>> optionalArtigo = artigoRepositoryDB.findBytituloDoArtigo(
+        tituloDoArtigo);
 
     if (optionalArtigo.isPresent()) {
 
@@ -60,56 +65,62 @@ public class ArtigoController {
     }
 
     throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-        "Não encontrado, dados incorretos. " + " " +
-            (nonNull(tituloDoArtigo) ? tituloDoArtigo : ""));
+        "Não encontrado, dados incorretos. " + " " + (nonNull(tituloDoArtigo) ? tituloDoArtigo
+            : ""));
   }
 
   @GetMapping("/{id}")
-  public ResponseEntity<Artigo> pegarArtigo(
-      @PathVariable(value = "id") long id) {
+  public ResponseEntity<ArtigoDto> pegarArtigo(@PathVariable(value = "id") long id) {
 
-    Optional<Artigo> optionalArtigo = artigoRepositoryDB.findById(id);
+    Optional<ArtigoEntity> optionalArtigo = artigoRepositoryDB.findById(id);
 
     if (optionalArtigo.isPresent()) {
-      Artigo artigo = atualizarViewls(optionalArtigo);
-      return new ResponseEntity<>(artigo, HttpStatus.OK);
+      ArtigoEntity artigoEntity = optionalArtigo.get();
+      ArtigoDto artigoDto = artigoConverter.converterEntidadeParaDto(artigoEntity);
+      // TODO: 02/06/22 implementar views
+
+      return new ResponseEntity<>(artigoDto, HttpStatus.OK);
     }
 
     throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-        "Não encontrado, dados incorretos. " + " " +
-            (nonNull(optionalArtigo) ? optionalArtigo : ""));
+        "Não encontrado, dados incorretos. " + id);
   }
 
   @GetMapping("/list")
-  public ResponseEntity<List<Artigo>> pegarTodosArtigos() {
+  public ResponseEntity<List<ArtigoDto>> pegarTodosArtigos() {
 
-    List<Artigo> listaDeArtigo = artigoRepositoryDB.findAll();
+    List<ArtigoEntity> listaDeArtigoEntities = artigoRepositoryDB.findAll();
 
-    if (listaDeArtigo.size() > 0) {
-      return new ResponseEntity<>(listaDeArtigo, HttpStatus.OK);
+    if (!listaDeArtigoEntities.isEmpty()) {
+
+      List<ArtigoDto> artigoDtos = listaDeArtigoEntities.stream()
+          .map(artigoEntity -> artigoConverter.converterEntidadeParaDto(artigoEntity))
+          .collect(Collectors.toList());
+
+      return new ResponseEntity<>(artigoDtos, HttpStatus.OK);
 
     }
-    throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-        "Não encontrado, dados incorretos. ");
+    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Não encontrado, dados incorretos. ");
   }
 
   @PutMapping
-  public ResponseEntity<Void> atualizaArtigo(@RequestBody Artigo artigoNovo) {
+  public ResponseEntity<Void> atualizaArtigo(@RequestBody ArtigoEntity artigoEntityNovo) {
 
-    Optional<Artigo> artigoEncontrado = artigoRepositoryDB.findById(artigoNovo.getId());
+    Optional<ArtigoEntity> artigoEncontrado = artigoRepositoryDB.findById(artigoEntityNovo.getId());
 
     if (artigoEncontrado.isEmpty()) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-          "Artigo não pode ser alterado, verifique o nome do " + "autor e data " + artigoNovo);
+          "Artigo não pode ser alterado, verifique o nome do " + "autor e data "
+              + artigoEntityNovo);
     }
 
-    Artigo artigoNoBD = artigoEncontrado.get();
-    artigoNoBD.setTituloDoArtigo(artigoNovo.getTituloDoArtigo());
-    artigoNoBD.setAutor(artigoNovo.getAutor());
-    artigoNoBD.setCorpo(artigoNovo.getCorpo());
-    artigoNoBD.setDataDaPublicacao(artigoNovo.getDataDaPublicacao());
+    ArtigoEntity artigoEntityNoBD = artigoEncontrado.get();
+    artigoEntityNoBD.setTituloDoArtigo(artigoEntityNovo.getTituloDoArtigo());
+    artigoEntityNoBD.setAutor(artigoEntityNovo.getAutor());
+    artigoEntityNoBD.setCorpo(artigoEntityNovo.getCorpo());
+    artigoEntityNoBD.setDataDaPublicacao(artigoEntityNovo.getDataDaPublicacao());
 
-    artigoRepositoryDB.save(artigoNoBD);
+    artigoRepositoryDB.save(artigoEntityNoBD);
 
     return new ResponseEntity<>(HttpStatus.ACCEPTED);
   }
@@ -122,13 +133,14 @@ public class ArtigoController {
 
   }
 
-  private Artigo atualizarViewls(Optional<Artigo> optionalArtigo) {
-    Artigo artigo = optionalArtigo.get();
-    Long views = Optional.ofNullable(artigo.getViews()).orElse(0L);
+  private ArtigoEntity atualizarViewls(Optional<ArtigoEntity> optionalArtigo) {
+    ArtigoEntity artigoEntity = optionalArtigo.get();
+    Long views = Optional.ofNullable(artigoEntity.getViews()).orElse(0L);
     views++;
-    artigo.setViews(views);
-    return artigoRepositoryDB.save(artigo);
+    artigoEntity.setViews(views);
+    return artigoRepositoryDB.save(artigoEntity);
   }
 
+  // TODO: 02/06/22 criar o DTO DE PESSOA criar o converter
 }
 

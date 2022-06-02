@@ -2,7 +2,7 @@ package com.example.cadastro.repository;
 
 import static java.util.Objects.isNull;
 
-import com.example.cadastro.domain.Pessoa;
+import com.example.cadastro.domain.PessoaEntity;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -12,55 +12,55 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class PessoaRepositoryInMemory {
 
-  private final List<Pessoa> pessoaListDataBase = new ArrayList<>();
+  private final List<PessoaEntity> pessoaEntityListDataBase = new ArrayList<>();
 
-  public boolean addNewPerson(Pessoa newPessoa) {
-    Optional<Pessoa> optionalPessoa = pessoaListDataBase.stream()
-        .filter(pessoa -> pessoa.getName().equals(newPessoa.getName()))
-        .filter(pessoa -> pessoa.getLastName().equals(newPessoa.getLastName()))
-        .filter(pessoa -> pessoa.getBirthDate().equals(newPessoa.getBirthDate()))
+  public boolean addNewPerson(PessoaEntity newPessoaEntity) {
+    Optional<PessoaEntity> optionalPessoa = pessoaEntityListDataBase.stream()
+        .filter(pessoa -> pessoa.getName().equals(newPessoaEntity.getName()))
+        .filter(pessoa -> pessoa.getLastName().equals(newPessoaEntity.getLastName()))
+        .filter(pessoa -> pessoa.getBirthDate().equals(newPessoaEntity.getBirthDate()))
         .findFirst();
 
   //  newPessoa.setId(ContadorUtil.contadorId());
-   return pessoaListDataBase.add(newPessoa);
+   return pessoaEntityListDataBase.add(newPessoaEntity);
   }
 
-  public List<Pessoa> buscarPessoas(String nomeDaPessoa) {
+  public List<PessoaEntity> buscarPessoas(String nomeDaPessoa) {
 
     if (isNull(nomeDaPessoa)) {
-      return pessoaListDataBase;
+      return pessoaEntityListDataBase;
     }
 
-    return pessoaListDataBase.stream()
+    return pessoaEntityListDataBase.stream()
         .filter(pessoa -> pessoa.getName().equals(nomeDaPessoa))
         .collect(Collectors.toList());
 
   }
 
-  public boolean atualizarPessoa(Pessoa novaPessoa) {
+  public boolean atualizarPessoa(PessoaEntity novaPessoaEntity) {
 
-    Optional<Pessoa> optionalPessoa = pessoaListDataBase.stream()
-        .filter(pessoa -> pessoa.getId() == novaPessoa.getId())
+    Optional<PessoaEntity> optionalPessoa = pessoaEntityListDataBase.stream()
+        .filter(pessoa -> pessoa.getId() == novaPessoaEntity.getId())
         .findFirst();
 
     if (optionalPessoa.isEmpty()) {
       return false;
     }
 
-    Pessoa pessoa = optionalPessoa.get();
-    pessoa.setName(novaPessoa.getName());
-    pessoa.setLastName(novaPessoa.getLastName());
-    pessoa.setBirthDate(novaPessoa.getBirthDate());
+    PessoaEntity pessoaEntity = optionalPessoa.get();
+    pessoaEntity.setName(novaPessoaEntity.getName());
+    pessoaEntity.setLastName(novaPessoaEntity.getLastName());
+    pessoaEntity.setBirthDate(novaPessoaEntity.getBirthDate());
     return true;
   }
 
   public boolean delete(String name, String lastName) {
-    Optional<Pessoa> optionalPessoa = pessoaListDataBase.stream()
+    Optional<PessoaEntity> optionalPessoa = pessoaEntityListDataBase.stream()
         .filter(pessoa -> pessoa.getName().equals(name))
         .filter(pessoa -> pessoa.getLastName().equals(lastName))
         .findFirst();
 
-   return pessoaListDataBase.remove(optionalPessoa.get());
+   return pessoaEntityListDataBase.remove(optionalPessoa.get());
   }
 
 }

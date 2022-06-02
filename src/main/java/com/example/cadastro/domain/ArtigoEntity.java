@@ -20,7 +20,7 @@ import org.springframework.format.annotation.DateTimeFormat.ISO;
 @AllArgsConstructor
 @Data
 @Entity(name = "Artigo")
-public class Artigo {
+public class ArtigoEntity {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -33,7 +33,7 @@ public class Artigo {
   @ManyToOne
   @JoinColumn
   @NotNull(message = ("{autor.not.null}"))
-  private Pessoa autor;
+  private PessoaEntity autor;
 
   @Column(name = "data_da_publicacao")
   @DateTimeFormat(iso = ISO.DATE)
