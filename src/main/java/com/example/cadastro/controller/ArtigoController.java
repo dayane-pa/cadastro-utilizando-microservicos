@@ -1,7 +1,6 @@
 package com.example.cadastro.controller;
 
 import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
 
 import com.example.cadastro.converters.ArtigoConverter;
 import com.example.cadastro.domain.ArtigoEntity;
@@ -41,8 +40,12 @@ public class ArtigoController {
   }
 
   @PostMapping()
-  public ResponseEntity<Void> adicionarArtigo(@RequestBody @Valid ArtigoEntity artigoEntity) {
+  public ResponseEntity<Void> adicionarArtigo(@RequestBody @Valid ArtigoDto artigoDto) {
+
+    ArtigoEntity artigoEntity = artigoConverter.converterArtigoDtoEmEntidade(artigoDto);
+
     ArtigoEntity artigoEntityAdicionado = artigoRepositoryDB.save(artigoEntity);
+
 
     if (isNull(artigoEntityAdicionado)) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
@@ -51,33 +54,15 @@ public class ArtigoController {
     return new ResponseEntity<>(HttpStatus.CREATED);
   }
 
-  @GetMapping()
-  public ResponseEntity<List<ArtigoEntity>> pegarArtigo(
-      @RequestParam(value = "titulodoartigo", required = true) String tituloDoArtigo) {
-
-    Optional<List<ArtigoEntity>> optionalArtigo = artigoRepositoryDB.findBytituloDoArtigo(
-        tituloDoArtigo);
-
-    if (optionalArtigo.isPresent()) {
-
-      artigoRepositoryDB.findBytituloDoArtigo(tituloDoArtigo);
-      return new ResponseEntity<>(optionalArtigo.get(), HttpStatus.OK);
-    }
-
-    throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-        "Não encontrado, dados incorretos. " + " " + (nonNull(tituloDoArtigo) ? tituloDoArtigo
-            : ""));
-  }
-
   @GetMapping("/{id}")
   public ResponseEntity<ArtigoDto> pegarArtigo(@PathVariable(value = "id") long id) {
 
     Optional<ArtigoEntity> optionalArtigo = artigoRepositoryDB.findById(id);
 
     if (optionalArtigo.isPresent()) {
-      ArtigoEntity artigoEntity = optionalArtigo.get();
-      ArtigoDto artigoDto = artigoConverter.converterEntidadeParaDto(artigoEntity);
-      // TODO: 02/06/22 implementar views
+      ArtigoEntity artigoEntity = atualizarViewls(optionalArtigo);
+      artigoEntity = optionalArtigo.get();
+      ArtigoDto artigoDto = artigoConverter.converterEntidadeDeArtigoParaDto(artigoEntity);
 
       return new ResponseEntity<>(artigoDto, HttpStatus.OK);
     }
@@ -94,7 +79,7 @@ public class ArtigoController {
     if (!listaDeArtigoEntities.isEmpty()) {
 
       List<ArtigoDto> artigoDtos = listaDeArtigoEntities.stream()
-          .map(artigoEntity -> artigoConverter.converterEntidadeParaDto(artigoEntity))
+          .map(artigoEntity -> artigoConverter.converterEntidadeDeArtigoParaDto(artigoEntity))
           .collect(Collectors.toList());
 
       return new ResponseEntity<>(artigoDtos, HttpStatus.OK);

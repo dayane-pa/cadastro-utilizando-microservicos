@@ -2,10 +2,13 @@ package com.example.cadastro.controller;
 
 import static java.util.Objects.isNull;
 
+import com.example.cadastro.converters.PessoaConverter;
 import com.example.cadastro.domain.PessoaEntity;
+import com.example.cadastro.dto.PessoaDto;
 import com.example.cadastro.repository.PessoaRepositoryDB;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import javax.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,17 +28,20 @@ import org.springframework.web.server.ResponseStatusException;
 public class PersonController {
 
   private PessoaRepositoryDB pessoaRepositoryDB;
+  private PessoaConverter pessoaConverter;
 
-  public PersonController(PessoaRepositoryDB repository) {
+  public PersonController(PessoaRepositoryDB repository, PessoaConverter pessoaConverter) {
     this.pessoaRepositoryDB = repository;
+    this.pessoaConverter = pessoaConverter;
   }
 
   @GetMapping()
-  public ResponseEntity<List<PessoaEntity>> buscarPessoas(@RequestParam(value = "name", required = true)
-  String nomeDaPessoa, @RequestParam(value = "lastname", required = true) String lastName) {
+  public ResponseEntity<List<PessoaEntity>> buscarPessoas(
+      @RequestParam(value = "name", required = true) String nomeDaPessoa,
+      @RequestParam(value = "lastname", required = true) String lastName) {
 
-    Optional<List<PessoaEntity>> pessoasOptional = pessoaRepositoryDB.findByNameAndLastName(nomeDaPessoa,
-        lastName);
+    Optional<List<PessoaEntity>> pessoasOptional = pessoaRepositoryDB.findByNameAndLastName(
+        nomeDaPessoa, lastName);
 
     if (pessoasOptional.isPresent()) {
 
@@ -46,12 +52,14 @@ public class PersonController {
   }
 
   @GetMapping("/{id}")
-  public ResponseEntity<PessoaEntity> quantidadeDeViews(@PathVariable(value = "id")  Long id) {
+  public ResponseEntity<PessoaDto> pegarPorId(@PathVariable(value = "id") Long id) {
 
-    Optional<PessoaEntity> pessoasOptional = pessoaRepositoryDB.findById(id);
+    Optional<PessoaEntity> pessoaOptional = pessoaRepositoryDB.findById(id);
 
-    if (pessoasOptional.isPresent()) {
-      return new ResponseEntity<>(pessoasOptional.get(), HttpStatus.OK);
+    if (pessoaOptional.isPresent()) {
+      PessoaEntity pessoaEntity = pessoaOptional.get();
+      PessoaDto pessoaDto = pessoaConverter.converterEntidadeDePessoaParaDto(pessoaEntity);
+      return new ResponseEntity<>(pessoaDto, HttpStatus.OK);
     }
 
     throw new ResponseStatusException(HttpStatus.NOT_FOUND, "pessoa não encontrada. ");
@@ -59,16 +67,19 @@ public class PersonController {
 
 
   @GetMapping("/list")
-  public ResponseEntity<List<PessoaEntity>> buscarTodasPessoas() {
+  public ResponseEntity<List<PessoaDto>> buscarTodasPessoas() {
 
     List<PessoaEntity> pessoaEntities = pessoaRepositoryDB.findAll();
 
-    if (pessoaEntities.size() > 0) {
-
-      return new ResponseEntity<>(pessoaEntities, HttpStatus.OK);
+    if (pessoaEntities.isEmpty()) {
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "pessoa não encontrada. ");
     }
 
-    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "pessoa não encontrada. ");
+    List<PessoaDto> pessoaDtos = pessoaEntities.stream()
+        .map(pessoaEntity -> pessoaConverter.converterEntidadeDePessoaParaDto(pessoaEntity))
+        .collect(Collectors.toList());
+
+    return new ResponseEntity<>(pessoaDtos, HttpStatus.OK);
   }
 
   @PostMapping
@@ -87,7 +98,8 @@ public class PersonController {
   @PutMapping
   public ResponseEntity<Void> putPerson(@RequestBody PessoaEntity pessoaEntity) {
 
-    Optional<PessoaEntity> pessoaExistenteOptional = pessoaRepositoryDB.findById(pessoaEntity.getId());
+    Optional<PessoaEntity> pessoaExistenteOptional = pessoaRepositoryDB.findById(
+        pessoaEntity.getId());
 
     if (pessoaExistenteOptional.isEmpty()) {
       throw new ResponseStatusException(HttpStatus.BAD_REQUEST,

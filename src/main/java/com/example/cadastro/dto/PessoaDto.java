@@ -7,14 +7,14 @@ import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder(setterPrefix = "with")
 @Data
-public class ArtigoDto {
+@Builder(setterPrefix = "with")
+public class PessoaDto {
 
   private long id;
-  private String tituloDoArtigo;
-  private PessoaDto autor;
-  private String dataDaPublicacao;
-  private String corpo;
-  private Long views;
+  private String name;
+  private String lastName;
+  private String birthDate;
+  private String email;
+
 }
